@@ -3,11 +3,33 @@ import { ArrowDown, ArrowUpRight } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { Button } from '@/components/ui/Button'
 import { HeroCosmos } from '@/components/ui/HeroCosmos'
+import { HeroOrganic } from '@/components/ui/HeroOrganic'
 import { heroIdentities } from '@/data/heroIdentities'
+import { nextPortraitSrc, PORTRAIT_SRC } from '@/data/portrait'
 import { scrollToId } from '@/lib/smoothScroll'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
 import { prefersReducedMotion } from '@/lib/motion'
 import { cn } from '@/lib/utils'
+
+/** Force portrait visible without clearProps (clearProps fights ScrollTrigger scrub). */
+function revealPortrait(
+  portrait: HTMLElement | null,
+  mask: HTMLElement | null,
+  img: HTMLElement | null,
+) {
+  if (mask) gsap.set(mask, { clipPath: 'inset(0% 0 0 0)' })
+  if (portrait) {
+    gsap.set(portrait, {
+      opacity: 1,
+      scale: 1,
+      rotateX: 0,
+      rotateY: 0,
+      y: 0,
+      transformPerspective: 1400,
+    })
+  }
+  if (img) gsap.set(img, { scale: 1, yPercent: 0, opacity: 1 })
+}
 
 function splitChars(el: HTMLElement | null) {
   if (!el) return [] as HTMLElement[]
@@ -79,9 +101,12 @@ export function Hero({ ready = true }: { ready?: boolean }) {
   const ctaRef = useRef<HTMLDivElement>(null)
   const scrollCueRef = useRef<HTMLParagraphElement>(null)
   const [active, setActive] = useState(0)
+  const [portraitSrc, setPortraitSrc] = useState(PORTRAIT_SRC)
   const activeRef = useRef(0)
+  const introDoneRef = useRef(false)
 
   // Hold cinematic initial states until preloader hands off
+  // Portrait stays fully opaque — only mask clip hides it (safer if ready stalls)
   useLayoutEffect(() => {
     if (ready || prefersReducedMotion()) return
     const portrait = portraitRef.current
@@ -93,7 +118,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
     gsap.set(portrait, {
       scale: 0.94,
       rotateX: 4,
-      opacity: 0.55,
+      opacity: 1,
       transformPerspective: 1400,
     })
     gsap.set(img, { scale: 1.04, yPercent: 2 })
@@ -117,6 +142,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
     const reduce = prefersReducedMotion()
     const mobile = window.matchMedia('(max-width: 900px)').matches
     const states = heroIdentities.length
+    introDoneRef.current = false
 
     const applyIdentity = (idx: number, commitReact: boolean) => {
       const next = heroIdentities[idx]
@@ -129,7 +155,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
       }
       if (tagRef.current) tagRef.current.textContent = next.tag
       if (descRef.current) descRef.current.textContent = next.description
-      if (img.getAttribute('src') !== next.image) img.src = next.image
+      // Keep the successfully-loaded portraitSrc — do not thrash <img src> on identity scrub
       if (commitReact && idx !== activeRef.current) {
         activeRef.current = idx
         setActive(idx)
@@ -140,10 +166,9 @@ export function Hero({ ready = true }: { ready?: boolean }) {
 
     const ctx = gsap.context(() => {
       if (reduce) {
-        gsap.set(
-          [portrait, mask, img, leftRef.current, rightRef.current, glowRef.current],
-          { clearProps: 'all' },
-        )
+        revealPortrait(portrait, mask, img)
+        gsap.set([leftRef.current, rightRef.current, glowRef.current], { clearProps: 'all' })
+        introDoneRef.current = true
         return
       }
 
@@ -153,7 +178,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
       gsap.set(portrait, {
         scale: 0.94,
         rotateX: 4,
-        opacity: 0.55,
+        opacity: 1,
         transformPerspective: 1400,
         transformOrigin: '50% 50%',
       })
@@ -171,10 +196,115 @@ export function Hero({ ready = true }: { ready?: boolean }) {
         y: 18,
       })
 
+      const ensurePortraitAtTop = (progress: number) => {
+        if (progress > 0.02) return
+        gsap.set(mask, { clipPath: 'inset(0% 0 0 0)' })
+        gsap.set(portrait, { opacity: 1 })
+        gsap.set(img, { opacity: 1 })
+      }
+
+      const mountScrollScrub = () => {
+        if (mobile) return
+
+        const scrollTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: root,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.55,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              const progress = Math.min(1, Math.max(0, self.progress))
+              ensurePortraitAtTop(progress)
+              const scaled = progress * states
+              const idx = Math.min(states - 1, Math.floor(scaled))
+              if (idx !== activeRef.current) {
+                if (labelRef.current?.querySelector('.hero-char')) {
+                  labelRef.current.textContent = heroIdentities[idx].label
+                }
+                if (headlineRef.current?.querySelector('.hero-word')) {
+                  headlineRef.current.textContent = heroIdentities[idx].headline
+                }
+                applyIdentity(idx, true)
+              } else if (idx > 0) {
+                applyIdentity(idx, false)
+              }
+            },
+            onRefresh: (self) => ensurePortraitAtTop(self.progress),
+            onLeaveBack: () => revealPortrait(portrait, mask, img),
+          },
+        })
+
+        // Explicit VISIBLE from-state — never record intro's clipped frame as progress=0
+        scrollTl
+          .fromTo(
+            portrait,
+            {
+              rotateY: 0,
+              rotateX: 0,
+              scale: 1,
+              y: 0,
+              opacity: 1,
+              transformPerspective: 1400,
+            },
+            {
+              rotateY: 12,
+              rotateX: -2,
+              scale: 0.97,
+              y: 20,
+              opacity: 1,
+              ease: 'none',
+              duration: 1,
+              immediateRender: false,
+            },
+            0,
+          )
+          .fromTo(
+            leftRef.current,
+            { x: 0, opacity: 1 },
+            { x: -36, opacity: 0.35, ease: 'none', duration: 1, immediateRender: false },
+            0,
+          )
+          .fromTo(
+            rightRef.current,
+            { x: 0, opacity: 1 },
+            { x: 36, opacity: 0.4, ease: 'none', duration: 1, immediateRender: false },
+            0,
+          )
+          .fromTo(
+            glowRef.current,
+            { opacity: 1, scale: 1 },
+            { opacity: 0.35, scale: 0.9, ease: 'none', duration: 1, immediateRender: false },
+            0,
+          )
+          .fromTo(
+            scrollCueRef.current,
+            { opacity: 1, y: 0 },
+            { opacity: 0, y: 12, ease: 'none', duration: 0.35, immediateRender: false },
+            0,
+          )
+      }
+
       // —— Entrance timeline ——
       const intro = gsap.timeline({
         defaults: { ease: 'power3.out' },
         delay: 0.12,
+        onComplete: () => {
+          introDoneRef.current = true
+          gsap.set(mask, { clipPath: 'inset(0% 0 0 0)' })
+          gsap.set(portrait, {
+            opacity: 1,
+            scale: 1,
+            rotateX: 0,
+            rotateY: 0,
+            y: 0,
+            transformPerspective: 1400,
+          })
+          gsap.set(img, { scale: 1, yPercent: 0, opacity: 1 })
+          // Mount scrub only after intro so progress=0 cannot be the clipped intro state
+          mountScrollScrub()
+          ScrollTrigger.refresh()
+        },
       })
 
       intro
@@ -251,90 +381,32 @@ export function Hero({ ready = true }: { ready?: boolean }) {
           delay: intro.duration() + 0.2,
         })
       }
-
-      // —— Scroll scrub (natural height, no pin) ——
-      if (!mobile) {
-        const scrollTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: root,
-            start: 'top top',
-            end: 'bottom top',
-            scrub: 0.55,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => {
-              const progress = Math.min(1, Math.max(0, self.progress))
-              const scaled = progress * states
-              const idx = Math.min(states - 1, Math.floor(scaled))
-              if (idx !== activeRef.current) {
-                // Flatten split markup once we enter identity scrub so text can swap
-                if (labelRef.current?.querySelector('.hero-char')) {
-                  labelRef.current.textContent = heroIdentities[idx].label
-                }
-                if (headlineRef.current?.querySelector('.hero-word')) {
-                  headlineRef.current.textContent = heroIdentities[idx].headline
-                }
-                applyIdentity(idx, true)
-              } else if (idx > 0) {
-                applyIdentity(idx, false)
-              }
-            },
-          },
-        })
-
-        scrollTl
-          .to(
-            portrait,
-            {
-              rotateY: 18,
-              rotateX: -2,
-              scale: 0.96,
-              y: 24,
-              transformPerspective: 1400,
-              ease: 'none',
-              duration: 1,
-            },
-            0,
-          )
-          .to(
-            mask,
-            {
-              clipPath: 'inset(0% 4% 0% 4%)',
-              ease: 'none',
-              duration: 1,
-            },
-            0,
-          )
-          .to(
-            leftRef.current,
-            { x: -36, opacity: 0.35, ease: 'none', duration: 1 },
-            0,
-          )
-          .to(
-            rightRef.current,
-            { x: 36, opacity: 0.4, ease: 'none', duration: 1 },
-            0,
-          )
-          .to(
-            glowRef.current,
-            { opacity: 0.35, scale: 0.9, ease: 'none', duration: 1 },
-            0,
-          )
-          .to(
-            scrollCueRef.current,
-            { opacity: 0, y: 12, ease: 'none', duration: 0.35 },
-            0,
-          )
-      }
     }, root)
 
     const refresh = () => ScrollTrigger.refresh()
     window.addEventListener('load', refresh)
     const t = window.setTimeout(refresh, 400)
+    // Absolute failsafe: if intro/clip races, force portrait visible
+    const failsafe = window.setTimeout(() => {
+      if (introDoneRef.current) return
+      revealPortrait(portrait, mask, img)
+      introDoneRef.current = true
+    }, 2200)
+
+    // Decode portrait before / during intro so blank frames never stick
+    if (img.decode) {
+      void img.decode().catch(() => {
+        /* decode fail is fine — onError fallback handles missing files */
+      })
+    }
 
     return () => {
       window.clearTimeout(t)
+      window.clearTimeout(failsafe)
       window.removeEventListener('load', refresh)
       ctx.revert()
+      // After teardown, ensure portrait is never left clipped from a cancelled intro
+      if (!introDoneRef.current) revealPortrait(portrait, mask, img)
     }
   }, [ready])
 
@@ -351,21 +423,14 @@ export function Hero({ ready = true }: { ready?: boolean }) {
       <div
         ref={stageRef}
         className="hero-stage relative flex min-h-[100svh] flex-col overflow-x-clip text-[#111]"
-        style={{
-          background:
-            'linear-gradient(165deg, #f7f2e8 0%, #efe6d6 42%, #e8dfcf 100%)',
-        }}
       >
         <HeroCosmos />
+        <HeroOrganic />
 
-        {/* Soft radial base + portrait glow */}
+        {/* Soft radial base — tinted via coat-theme.css */}
         <div
-          className="pointer-events-none absolute inset-0 z-[1]"
+          className="hero-stage__wash pointer-events-none absolute inset-0 z-[2]"
           aria-hidden="true"
-          style={{
-            background:
-              'radial-gradient(ellipse 55% 50% at 50% 40%, rgba(255,255,255,0.55) 0%, transparent 70%)',
-          }}
         />
 
         <Container className="relative z-10 flex flex-1 flex-col justify-center py-8 pt-[5rem] sm:py-10 sm:pt-[5.5rem]">
@@ -373,7 +438,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
             className={cn(
               'relative grid grid-cols-1 items-center gap-5',
               'md:gap-6',
-              'lg:grid-cols-[1.05fr_minmax(240px,0.9fr)_1.05fr] lg:gap-5',
+              'lg:grid-cols-[1fr_minmax(280px,1.05fr)_1fr] lg:gap-4',
             )}
           >
             <div ref={leftRef} className="order-1 max-w-md lg:order-none">
@@ -385,7 +450,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
               </p>
               <h1
                 ref={headlineRef}
-                className="mt-2 font-display text-[clamp(2.35rem,7.5vw,5.75rem)] leading-[0.88] tracking-[0.02em] text-[#121212] sm:mt-3"
+                className="mt-2 font-display text-[clamp(2.75rem,8.4vw,6.5rem)] leading-[0.88] tracking-[0.02em] text-[#121212] sm:mt-3"
               >
                 {identity.headline}
               </h1>
@@ -394,7 +459,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
             <div className="order-2 flex justify-center lg:order-none">
               <div
                 ref={portraitRef}
-                className="relative w-full max-w-[min(260px,72vw)] sm:max-w-[min(320px,70vw)] lg:max-w-[min(380px,70vw)]"
+                className="relative w-full max-w-[min(300px,78vw)] sm:max-w-[min(360px,74vw)] lg:max-w-[min(440px,78vw)]"
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 <div ref={floatRef} className="relative w-full" style={{ transformStyle: 'preserve-3d' }}>
@@ -410,12 +475,22 @@ export function Hero({ ready = true }: { ready?: boolean }) {
                   >
                     <img
                       ref={imgRef}
-                      src={heroIdentities[0].image}
+                      src={portraitSrc}
                       alt="Portrait of Vijetha L"
                       className="portrait-fade h-full w-full object-cover object-[center_22%]"
                       loading="eager"
                       decoding="async"
                       draggable={false}
+                      onLoad={() => {
+                        // Ensure mask is open if load lands after a cancelled intro
+                        if (introDoneRef.current && maskRef.current) {
+                          gsap.set(maskRef.current, { clipPath: 'inset(0% 0 0 0)' })
+                        }
+                      }}
+                      onError={() => {
+                        const next = nextPortraitSrc(portraitSrc)
+                        if (next) setPortraitSrc(next)
+                      }}
                     />
                   </div>
                 </div>
@@ -428,13 +503,13 @@ export function Hero({ ready = true }: { ready?: boolean }) {
             >
               <p
                 ref={tagRef}
-                className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#5c574f] sm:text-[11px]"
+                className="font-mono text-[11px] uppercase tracking-[0.22em] text-[#5c574f] sm:text-[13px]"
               >
                 {identity.tag}
               </p>
               <p
                 ref={descRef}
-                className="mt-3 text-sm leading-relaxed text-[#4a463f] sm:mt-4 sm:text-[0.95rem]"
+                className="mt-3 text-base leading-relaxed text-[#4a463f] sm:mt-4 sm:text-[1.1rem] sm:leading-[1.65]"
               >
                 {identity.description}
               </p>
@@ -442,10 +517,10 @@ export function Hero({ ready = true }: { ready?: boolean }) {
                 ref={ctaRef}
                 className="mt-6 flex flex-wrap items-center gap-3 sm:mt-8 lg:justify-end"
               >
-                <Button variant="light" size="md" onClick={() => scrollToId('projects')}>
-                  View My Work <ArrowUpRight size={16} />
+                <Button variant="light" size="lg" onClick={() => scrollToId('projects')}>
+                  View My Work <ArrowUpRight size={18} />
                 </Button>
-                <Button variant="dark" size="md" onClick={() => scrollToId('contact')}>
+                <Button variant="dark" size="lg" onClick={() => scrollToId('contact')}>
                   Contact Me
                 </Button>
               </div>

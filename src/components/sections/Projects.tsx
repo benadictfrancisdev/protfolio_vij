@@ -1,18 +1,18 @@
-import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { ArrowUpRight, Github } from 'lucide-react'
+import { useId, useRef, useState } from 'react'
+import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
+import { ArrowUpRight, ChevronDown, Github } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { Reveal } from '@/components/ui/Reveal'
 import { TiltCard } from '@/components/ui/TiltCard'
 import { ProjectVisual } from '@/components/projects/ProjectVisual'
-import { projects } from '@/data/projects'
+import { projects, type Project } from '@/data/projects'
 import { cn } from '@/lib/utils'
 
 export function Projects() {
   return (
     <section id="projects" className="section section-dark relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(138,148,72,0.06),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(184,240,0,0.05),transparent_60%)]" />
       <Container>
         <SectionHeading
           index="04"
@@ -31,14 +31,10 @@ export function Projects() {
   )
 }
 
-function ProjectPanel({
-  project,
-  index,
-}: {
-  project: (typeof projects)[number]
-  index: number
-}) {
+function ProjectPanel({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLElement>(null)
+  const panelId = useId()
+  const [open, setOpen] = useState(false)
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start end', 'end start'],
@@ -51,7 +47,7 @@ function ProjectPanel({
     <article ref={ref} className="relative">
       <motion.span
         style={{ opacity: numberOpacity }}
-        className="pointer-events-none absolute -top-10 right-0 font-display text-[clamp(5rem,18vw,14rem)] leading-none text-white select-none"
+        className="pointer-events-none absolute -top-10 right-0 select-none font-display text-[clamp(5rem,18vw,14rem)] leading-none text-white"
         aria-hidden="true"
       >
         {project.index}
@@ -62,7 +58,7 @@ function ProjectPanel({
           <motion.div style={{ y }} className={cn('lg:col-span-7', reversed && 'lg:order-2')}>
             <TiltCard className="group rounded-3xl">
               <div className="overflow-hidden rounded-3xl border border-white/10 transition-colors duration-500 group-hover:border-accent/40">
-                <div className="transition-transform duration-700 ease-out group-hover:scale-[1.04]">
+                <div className="origin-center transition-transform duration-700 ease-out group-hover:scale-[1.04]">
                   <ProjectVisual variant={project.visual} className="rounded-none border-0" />
                 </div>
                 <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/10 transition-all duration-500 group-hover:ring-accent/30" />
@@ -88,34 +84,64 @@ function ProjectPanel({
               {project.tech.map((tech) => (
                 <span
                   key={tech}
-                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-muted"
+                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-muted transition-colors hover:border-accent/40 hover:text-text"
                 >
                   {tech}
                 </span>
               ))}
             </div>
-            {project.github && (
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-cursor="hover"
-                className="mt-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-5 py-2.5 text-sm text-text transition-all hover:border-accent/50 hover:bg-accent/10 hover:text-accent"
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                aria-expanded={open}
+                aria-controls={panelId}
+                onClick={() => setOpen((v) => !v)}
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2.5 text-sm text-text transition-colors hover:border-accent/50 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
-                <Github size={15} />
-                Explore Project
-                <ArrowUpRight size={14} />
-              </a>
-            )}
+                Case study
+                <ChevronDown
+                  size={16}
+                  className={cn('transition-transform duration-300', open && 'rotate-180')}
+                />
+              </button>
+              {project.github && (
+                <a
+                  href={project.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-cursor="hover"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-5 py-2.5 text-sm text-text transition-all hover:border-accent/50 hover:bg-accent/10 hover:text-accent"
+                >
+                  <Github size={15} />
+                  Explore Project
+                  <ArrowUpRight size={14} />
+                </a>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="mt-10 grid gap-6 border-t border-white/10 pt-8 md:grid-cols-2 lg:grid-cols-4">
-          <Detail label="Problem" text={project.problem} />
-          <Detail label="Solution" text={project.solution} />
-          <DetailList label="Approach" items={project.approach} />
-          <DetailList label="Outcomes" items={project.outcomes} />
-        </div>
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              id={panelId}
+              key="detail"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="mt-10 grid gap-6 border-t border-white/10 pt-8 md:grid-cols-2 lg:grid-cols-4">
+                <Detail label="Problem" text={project.problem} />
+                <Detail label="Solution" text={project.solution} />
+                <DetailList label="Approach" items={project.approach} />
+                <DetailList label="Outcomes" items={project.outcomes} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Reveal>
     </article>
   )

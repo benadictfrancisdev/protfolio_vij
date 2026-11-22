@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import SmoothScroll from '@/components/providers/SmoothScroll'
 import { ScrollProgress } from '@/components/ui/ScrollProgress'
 import { Preloader } from '@/components/ui/Preloader'
@@ -18,6 +18,14 @@ import { Footer } from '@/components/sections/Footer'
 
 export default function App() {
   const [ready, setReady] = useState(false)
+  const handleReady = useCallback(() => setReady(true), [])
+
+  // Never leave Hero stuck in preloader-hold (clipped / dimmed portrait)
+  useEffect(() => {
+    if (ready) return
+    const t = window.setTimeout(() => setReady(true), 4500)
+    return () => window.clearTimeout(t)
+  }, [ready])
 
   return (
     <div className="relative min-h-full bg-bg text-text">
@@ -28,7 +36,7 @@ export default function App() {
         Skip to content
       </a>
 
-      <Preloader onComplete={() => setReady(true)} />
+      <Preloader onComplete={handleReady} />
       <CustomCursor />
       <SmoothScroll />
       <ScrollProgress />

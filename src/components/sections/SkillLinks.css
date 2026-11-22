@@ -1,0 +1,125 @@
+.skilllinks {
+  --sl-accent: var(--accent, #b8f000);
+  position: relative;
+}
+
+.skilllinks__hint {
+  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+/* entry scan: chips light up in DOM order, once */
+.skilllinks[data-inview='false'] [data-skill] {
+  opacity: 0;
+}
+
+.skilllinks[data-inview='true'] [data-skill] {
+  animation: sl-chip 0.55s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 35ms);
+}
+
+@keyframes sl-chip {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+/* exploration states */
+.skilllinks [data-skill] {
+  cursor: pointer;
+  transition:
+    opacity 0.25s,
+    color 0.25s,
+    border-color 0.25s,
+    background-color 0.25s,
+    transform 0.25s;
+}
+
+.skilllinks [data-skill][data-dim] {
+  opacity: 0.22;
+}
+
+.skilllinks [data-skill][data-on] {
+  color: var(--sl-accent);
+  border-color: var(--sl-accent);
+  background-color: color-mix(in srgb, var(--sl-accent) 14%, transparent);
+  transform: translateY(-1px);
+}
+
+.skilllinks [data-skill]:focus-visible {
+  outline: 2px solid var(--sl-accent);
+  outline-offset: 3px;
+}
+
+.skilllinks [data-card],
+.skilllinks [data-card] .glass-card {
+  transition: border-color 0.35s;
+}
+
+.skilllinks [data-card][data-lit],
+.skilllinks [data-card][data-lit] .glass-card {
+  border-color: color-mix(in srgb, var(--sl-accent) 60%, transparent);
+}
+
+/* connecting lines + travelling light */
+.skilllinks__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.skilllinks__path {
+  fill: none;
+  stroke: var(--sl-accent);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+}
+
+.skilllinks__pulse {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sl-accent);
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--sl-accent) 70%, transparent);
+  pointer-events: none;
+  opacity: 0;
+  animation: sl-pulse 1.4s linear infinite;
+}
+
+@keyframes sl-pulse {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skilllinks[data-inview='true'] [data-skill] {
+    animation: none;
+  }
+
+  .skilllinks [data-skill],
+  .skilllinks [data-card] {
+    transition: none;
+  }
+}

@@ -62,7 +62,7 @@ export function Contact() {
         setValues(EMPTY)
       } else {
         const subject = encodeURIComponent(values.subject || 'Portfolio enquiry')
-        const body = encodeURIComponent(`${values.message}\n\n— ${values.name} (${values.email})`)
+        const body = encodeURIComponent(`${values.message}\n\n? ${values.name} (${values.email})`)
         window.location.href = `mailto:${personal.email}?subject=${subject}&body=${body}`
         setUsedFallback(true)
         setStatus('success')
@@ -224,7 +224,7 @@ export function Contact() {
                   >
                     {status === 'loading' ? (
                       <>
-                        <Loader2 size={16} className="animate-spin" /> Sending…
+                        <Loader2 size={16} className="animate-spin" /> Sending...
                       </>
                     ) : (
                       <>
@@ -247,8 +247,8 @@ export function Contact() {
                     <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-accent" />
                     <span>
                       {usedFallback
-                        ? 'Your email app has been opened — please send the message to complete it.'
-                        : 'Thank you — your message has been sent. I will get back to you soon.'}
+                        ? 'Your email app has been opened - please send the message to complete it.'
+                        : 'Thank you - your message has been sent. I will get back to you soon.'}
                     </span>
                   </motion.div>
                 )}

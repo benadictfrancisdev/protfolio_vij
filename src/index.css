@@ -90,6 +90,9 @@
   [data-skill-card],
   [data-skill-chip],
   [data-edu-card],
+  [data-spec-card],
+  [data-spec-chip],
+  [data-spec-index],
   [data-word],
   [data-hero-copy] {
     opacity: 1 !important;

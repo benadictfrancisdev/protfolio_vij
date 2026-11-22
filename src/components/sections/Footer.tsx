@@ -4,6 +4,7 @@ import { Container } from '@/components/ui/Container'
 import { personal } from '@/data/personal'
 import { scrollToId, scrollToTop } from '@/lib/smoothScroll'
 import { gsap } from '@/lib/gsap'
+import { prefersReducedMotion } from '@/lib/motion'
 
 const LINKS = [
   { id: 'about', label: 'About' },
@@ -13,27 +14,59 @@ const LINKS = [
   { id: 'contact', label: 'Contact' },
 ]
 
+const META = [
+  {
+    label: 'Focus',
+    value: 'AI / ML · Computer Vision · Generative AI',
+  },
+  {
+    label: 'Status',
+    value: personal.availability,
+    live: true,
+  },
+  {
+    label: 'Region',
+    value: personal.location,
+  },
+]
+
 export function Footer() {
   const footerRef = useRef<HTMLElement>(null)
   const nameRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduce || !nameRef.current || !footerRef.current) return
+    if (prefersReducedMotion() || !nameRef.current || !footerRef.current) return
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
         nameRef.current,
-        { yPercent: 22, opacity: 0 },
+        { yPercent: 18, opacity: 0.15 },
         {
           yPercent: 0,
           opacity: 1,
           ease: 'none',
           scrollTrigger: {
             trigger: footerRef.current,
-            start: 'top 85%',
+            start: 'top 90%',
             end: 'bottom bottom',
             scrub: true,
+          },
+        },
+      )
+
+      gsap.fromTo(
+        footerRef.current!.querySelectorAll('[data-footer-reveal]'),
+        { opacity: 0, y: 24 },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.08,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: footerRef.current,
+            start: 'top 88%',
+            once: true,
           },
         },
       )
@@ -45,9 +78,13 @@ export function Footer() {
   return (
     <footer ref={footerRef} className="relative overflow-hidden border-t border-white/10 pt-16">
       <Container>
-        <div className="flex flex-col gap-10 pb-10 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="max-w-md text-lg leading-relaxed text-muted">
+        {/* Top row: CTA copy + contacts | back to top — same baseline */}
+        <div
+          data-footer-reveal
+          className="grid gap-8 border-b border-white/10 pb-10 md:grid-cols-[minmax(0,1fr)_auto] md:items-end"
+        >
+          <div className="min-w-0">
+            <p className="max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
               Let&apos;s build something intelligent. Open to AI/ML opportunities, research and
               collaborations.
             </p>
@@ -82,17 +119,46 @@ export function Footer() {
           </div>
 
           <button
+            type="button"
             onClick={scrollToTop}
-            className="inline-flex items-center gap-2 self-start rounded-full border border-white/15 px-5 py-3 text-sm text-text transition-colors hover:border-accent hover:text-accent md:self-auto"
+            className="inline-flex h-fit items-center gap-2 justify-self-start rounded-full border border-white/15 px-5 py-3 text-sm text-text transition-colors hover:border-accent hover:text-accent md:justify-self-end"
           >
             Back to top <ArrowUp size={15} />
           </button>
         </div>
 
-        <nav className="flex flex-wrap gap-x-6 gap-y-2 border-t border-white/10 py-8" aria-label="Footer">
+        {/* Meta strip — 3 equal columns, aligned */}
+        <div
+          data-footer-reveal
+          className="grid gap-6 border-b border-white/10 py-10 sm:grid-cols-3"
+        >
+          {META.map((item) => (
+            <div key={item.label}>
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted">
+                // {item.label}
+              </p>
+              <p className="mt-2 flex items-center gap-2 text-sm text-text sm:text-base">
+                {'live' in item && item.live ? (
+                  <span
+                    className="inline-block h-2 w-2 shrink-0 rounded-full bg-emerald-400"
+                    aria-hidden="true"
+                  />
+                ) : null}
+                {item.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <nav
+          data-footer-reveal
+          className="flex flex-wrap gap-x-6 gap-y-2 border-b border-white/10 py-8"
+          aria-label="Footer"
+        >
           {LINKS.map((link) => (
             <button
               key={link.id}
+              type="button"
               onClick={() => scrollToId(link.id)}
               className="text-sm text-muted transition-colors hover:text-text"
             >
@@ -101,7 +167,7 @@ export function Footer() {
           ))}
         </nav>
 
-        <div ref={nameRef} className="select-none">
+        <div ref={nameRef} className="select-none overflow-hidden py-6">
           <div className="bg-gradient-to-b from-white/15 to-white/[0.03] bg-clip-text font-display text-[clamp(3.5rem,18vw,16rem)] uppercase leading-[0.8] tracking-tight text-transparent">
             VIJETHA L
           </div>

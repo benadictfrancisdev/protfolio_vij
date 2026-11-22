@@ -1,0 +1,199 @@
+/*
+ * Coat theme — HERO ONLY.
+ * About and every section below stay the original dark (#121212) design.
+ */
+
+body .hero-stage {
+  --coat-light: #ebe3d4;
+  --coat: #e2d5c0;
+  --coat-deep: #d0b896;
+  --coat-shape: #c4aa88;
+  --ink: #1b1510;
+  --ink-2: color-mix(in srgb, var(--ink) 78%, transparent);
+  color: var(--ink);
+  background:
+    radial-gradient(58% 52% at 50% 38%, var(--coat-light) 0%, rgba(235, 227, 212, 0) 70%),
+    linear-gradient(to bottom, var(--coat) 0%, var(--coat-deep) 100%);
+}
+
+/* Soft wash into coat (replaces stark white radial) */
+body .hero-stage .hero-stage__wash {
+  background: radial-gradient(
+    ellipse 55% 50% at 50% 40%,
+    rgba(235, 227, 212, 0.45) 0%,
+    transparent 70%
+  );
+}
+
+/* Tone down cosmos so organic shapes (reference) read first */
+body .hero-stage .hero-cosmos {
+  opacity: 0.2;
+}
+
+/* —— Organic background design (reference-style flowing shapes) —— */
+body .hero-stage .hero-organic__svg {
+  opacity: 0.9;
+}
+
+body .hero-stage .hero-organic__shape {
+  transform-origin: center;
+  transform-box: fill-box;
+  will-change: transform;
+}
+
+body .hero-stage .hero-organic__shape--a {
+  animation: hero-org-drift-a 22s ease-in-out infinite alternate;
+}
+
+body .hero-stage .hero-organic__shape--b {
+  animation: hero-org-drift-b 28s ease-in-out infinite alternate;
+}
+
+body .hero-stage .hero-organic__shape--c {
+  animation: hero-org-drift-c 24s ease-in-out infinite alternate;
+}
+
+body .hero-stage .hero-organic__shape--d {
+  animation: hero-org-drift-a 30s ease-in-out infinite alternate-reverse;
+}
+
+body .hero-stage .hero-organic__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+body .hero-stage .hero-organic__orb--tl {
+  top: -8%;
+  left: -6%;
+  width: min(52vw, 560px);
+  height: min(42vw, 440px);
+  background: radial-gradient(circle, #d8c3a5 0%, transparent 70%);
+  animation: hero-org-orb 18s ease-in-out infinite alternate;
+}
+
+body .hero-stage .hero-organic__orb--br {
+  right: -10%;
+  bottom: 4%;
+  width: min(48vw, 520px);
+  height: min(48vw, 520px);
+  background: radial-gradient(circle, #c4aa88 0%, transparent 68%);
+  animation: hero-org-orb 20s ease-in-out infinite alternate-reverse;
+}
+
+body .hero-stage .hero-organic__orb--mid {
+  left: 32%;
+  top: 28%;
+  width: min(36vw, 380px);
+  height: min(36vw, 380px);
+  background: radial-gradient(circle, rgba(233, 220, 198, 0.85) 0%, transparent 72%);
+  opacity: 0.4;
+  animation: hero-org-orb 26s ease-in-out infinite alternate;
+}
+
+@keyframes hero-org-drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(2.5%, 1.5%, 0) scale(1.03);
+  }
+}
+
+@keyframes hero-org-drift-b {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-2%, -1.2%, 0);
+  }
+}
+
+@keyframes hero-org-drift-c {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(-1.5%, 2%, 0) rotate(2deg);
+  }
+}
+
+@keyframes hero-org-orb {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, -2%, 0) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body .hero-stage .hero-organic__shape,
+  body .hero-stage .hero-organic__orb {
+    animation: none !important;
+  }
+}
+
+/* Headline: original large condensed scale (Bebas Neue) */
+body .hero-stage h1 {
+  color: var(--ink);
+  font-size: clamp(2.75rem, 8.4vw, 6.5rem);
+}
+
+body .hero-stage .text-\[\#3a3832\],
+body .hero-stage .text-\[\#121212\] {
+  color: var(--ink);
+}
+
+body .hero-stage .text-\[\#5c574f\],
+body .hero-stage .text-\[\#4a463f\],
+body .hero-stage .text-\[\#6a655c\] {
+  color: var(--ink-2);
+}
+
+body .hero-stage .bg-\[\#111\] {
+  background-color: var(--ink);
+}
+
+body .hero-stage .bg-\[\#111\]\/2 {
+  background-color: color-mix(in srgb, var(--ink) 20%, transparent);
+}
+
+/* Portrait backglow — warm coat, not stark white */
+body .hero-stage .bg-white\/70 {
+  background-color: color-mix(in srgb, var(--coat-light) 72%, transparent);
+}
+
+/* Buttons keep shape; retint for coat readability */
+body .hero-stage button.bg-white {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+}
+
+body .hero-stage button.border-black\/20 {
+  border-color: color-mix(in srgb, var(--ink) 32%, transparent);
+  color: var(--ink);
+  background: transparent;
+}
+
+/* Transparent coat-cutout + bottom fade — no gray studio rectangle */
+body .hero-stage .portrait-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+  background: transparent;
+}
+
+/* Soft hand-off: coat hero → dark About / rest of site */
+body .hero-stage::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: min(140px, 16vh);
+  background: linear-gradient(to bottom, transparent, #121212);
+  pointer-events: none;
+  z-index: 6;
+}

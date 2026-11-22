@@ -24,6 +24,7 @@ export function Navbar() {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 24)
+      // Light/ink nav only over the coat hero; About + rest stay dark
       const hero = document.querySelector('[data-hero-section]')
       if (!hero) {
         setLight(false)
@@ -62,7 +63,7 @@ export function Navbar() {
         'fixed inset-x-0 top-0 z-50 transition-all duration-300',
         light
           ? scrolled
-            ? 'border-b border-black/5 bg-[#efebe3]/85 backdrop-blur-xl'
+            ? 'border-b border-black/5 bg-[#E9DCC6]/85 backdrop-blur-xl'
             : 'bg-transparent'
           : scrolled
             ? 'border-b border-white/10 bg-[#121212]/85 backdrop-blur-xl'

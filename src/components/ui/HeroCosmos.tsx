@@ -254,7 +254,7 @@ export function HeroCosmos() {
   }, [])
 
   return (
-    <div ref={wrapRef} className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
+    <div ref={wrapRef} className="hero-cosmos pointer-events-none absolute inset-0 z-0" aria-hidden="true">
       <canvas ref={canvasRef} className="h-full w-full" />
     </div>
   )

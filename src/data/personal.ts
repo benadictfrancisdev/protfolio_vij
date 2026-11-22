@@ -3,7 +3,7 @@ export const personal = {
   displayName: 'VIJETHA L',
   firstName: 'Vijetha',
   location: 'Bengaluru, India',
-  email: 'vijuthank07@gmail.com',
+  email: 'vijjukanth07@gmail.com',
   linkedin: 'https://www.linkedin.com/in/vijetha-l-12b16a27a/',
   linkedinHandle: 'vijetha-l-12b16a27a',
   github: 'https://github.com/vijetha7777',
