@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Portrait placeholder for Vijetha L">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#141416"/>
+      <stop offset="55%" stop-color="#0c0c0e"/>
+      <stop offset="100%" stop-color="#070708"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0.2" y1="0" x2="0.9" y2="1">
+      <stop offset="0%" stop-color="#2a2a30"/>
+      <stop offset="100%" stop-color="#151518"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c8ff3d" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#9bcc20" stop-opacity="0.35"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="55%" cy="35%" r="45%">
+      <stop offset="0%" stop-color="#c8ff3d" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#c8ff3d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <rect width="800" height="1000" fill="url(#glow)"/>
+
+  <!-- soft grid -->
+  <g stroke="#ffffff" stroke-opacity="0.05" stroke-width="1">
+    <path d="M0 100 H800 M0 200 H800 M0 300 H800 M0 400 H800 M0 500 H800 M0 600 H800 M0 700 H800 M0 800 H800 M0 900 H800"/>
+    <path d="M100 0 V1000 M200 0 V1000 M300 0 V1000 M400 0 V1000 M500 0 V1000 M600 0 V1000 M700 0 V1000"/>
+  </g>
+
+  <!-- side-view silhouette (facing right) -->
+  <g transform="translate(120,110)">
+    <!-- hair / head mass -->
+    <path
+      fill="url(#skin)"
+      d="M250 80
+         C330 70 390 110 410 180
+         C430 250 420 320 390 370
+         C370 405 350 430 340 460
+         L320 520
+         C300 560 270 590 230 610
+         C180 635 140 680 130 760
+         L120 900
+         L520 900
+         L510 760
+         C500 680 470 640 430 610
+         C390 580 370 540 360 500
+         C350 460 360 420 390 390
+         C450 340 470 270 450 200
+         C430 120 370 70 290 60
+         C270 56 250 60 250 80 Z"
+      opacity="0.95"
+    />
+    <!-- neck / shoulder -->
+    <path
+      fill="#101012"
+      d="M210 620
+         C250 650 310 670 380 660
+         C450 650 510 680 560 760
+         L580 900
+         L80 900
+         L100 760
+         C120 690 160 640 210 620 Z"
+      opacity="0.9"
+    />
+    <!-- accent contour line -->
+    <path
+      fill="none"
+      stroke="url(#accent)"
+      stroke-width="3"
+      stroke-linecap="round"
+      d="M405 175
+         C425 240 418 310 392 360
+         C372 395 352 425 342 455
+         C330 500 318 540 300 575"
+      opacity="0.85"
+    />
+  </g>
+
+  <!-- monogram -->
+  <text
+    x="400"
+    y="860"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="92"
+    fill="#c8ff3d"
+    fill-opacity="0.55"
+    letter-spacing="8"
+  >VL</text>
+  <text
+    x="400"
+    y="910"
+    text-anchor="middle"
+    font-family="ui-monospace, SFMono-Regular, Menlo, monospace"
+    font-size="18"
+    fill="#ffffff"
+    fill-opacity="0.45"
+    letter-spacing="6"
+  >AI / ML ENGINEER</text>
+</svg>

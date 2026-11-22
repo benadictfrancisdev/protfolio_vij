@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+
+# build
+dist/
+dist-ssr/
+*.local
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# logs / cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+*.tsbuildinfo
+.vite/
+.cache/
+
+# editor
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# audit / local tooling output
+audit-output/
+playwright-report/
+test-results/
+coverage/
+
+# temp assets
+public/images/_*.tmp.jpg
+public/images/*.tmp.jpg
+
+# OS
+Thumbs.db
+Desktop.ini
